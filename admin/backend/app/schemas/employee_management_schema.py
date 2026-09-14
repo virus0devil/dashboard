@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field, EmailStr
 from typing import Annotated, List
+from datetime import datetime
 from pydantic_extra_types.phone_numbers import PhoneNumber
+from app.core.roles import UserRole
 
 class Employee_Management_Schema(BaseModel):
     fullname: Annotated[
@@ -38,13 +40,14 @@ class Employee_Management_Schema(BaseModel):
             description="User Designation"
         )
     ]
-    isadmin:Annotated[
-        bool,
+    role: Annotated[
+        UserRole,
         Field(
-            default="False",
-            description="Is admin"
+            default=UserRole.PENTESTER,
+            description="User role"
         )
     ]
+
     isactive: Annotated[
         bool,
         Field(
@@ -84,6 +87,8 @@ class Employee_Management_Response_Schema(BaseModel):
         )
     ]
 
+    role: UserRole
+
     isactive: Annotated[
         bool,
         Field(
@@ -91,6 +96,9 @@ class Employee_Management_Response_Schema(BaseModel):
             description="Is Active"
         )
     ]
+
+    created_at: datetime 
+    updated_at: datetime
 
     class Config:
         from_attributes = True

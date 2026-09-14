@@ -7,9 +7,9 @@ from datetime import datetime
 from app.models.employee_management_model import Employee_Management_Model
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy import select, func
-# from app.core.security import get_password_hash, get_current_user, require_admin
+from app.core.employee_security import hash_password 
 from sqlalchemy.ext.asyncio.session import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, Integer
 
 employee_management_routes = APIRouter()
 
@@ -19,14 +19,29 @@ async def list_employee(db: AsyncSession = Depends(getdb)):
     result = await db.execute(list_all_employee)
     return result.scalars().all()
 
-async def generate_employee_id(db: AsyncSession):
+async def generate_employee_id(db: AsyncSession) -> str:
     year = datetime.now().year
-    result = await db.execute(
-        select(func.count()).select_from(Employee_Management_Model)
-    )
-    count = result.scalar()
+    prefix = f"DASH{year}"
 
-    return f"DASH{year}{count + 1:04d}"
+    result = await db.execute(
+        select(
+            func.max(
+                func.cast(
+                    func.substring(
+                        Employee_Management_Model.employee_id,
+                        len(prefix) + 1
+                    ),
+                    Integer
+                )
+            )
+        ).where(
+            Employee_Management_Model.employee_id.like(f"{prefix}%")
+        )
+    )
+
+    max_number = result.scalar() or 0
+
+    return f"{prefix}{max_number + 1:04d}"
 
 @employee_management_routes.post("/employee-details/add", response_model=Employee_Management_Response_Schema)
 async def create_employee(employee: Employee_Management_Schema, db: AsyncSession = Depends(getdb)):
@@ -37,14 +52,16 @@ async def create_employee(employee: Employee_Management_Schema, db: AsyncSession
     if existing_employee_obj:
         raise HTTPException(status_code=400, detail="Email already exists")
 
+
     new_employee = Employee_Management_Model(
-        employee_id="Temp",
+       employee_id="Temp",
         fullname=employee.fullname,
-        email=employee.email,
-        password=employee.password, # TODO hashed_password=get_password_hash(employee.password),
-        mobile_number=employee.mobile_number,
+        email=str(employee.email).lower(),
+        password=hash_password(employee.password),
+        mobile_number=str(employee.mobile_number),
         designation=employee.designation,
-        isadmin=employee.isadmin
+        role=employee.role.value,
+        isactive=employee.isactive,
     )
 
     db.add(new_employee)
