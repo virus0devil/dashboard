@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter,Depends,HTTPException,status
+from fastapi import APIRouter,Depends,HTTPException,status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,35 +7,32 @@ from app.core.database import getdb
 from app.core.dependencies import get_current_user
 from app.core.employee_security import decode_token,verify_password,hash_password,hash_token,create_access_token,create_refresh_token
 from app.models.employee_management_model import Employee_Management_Model
-from app.models.refresh_token_model import Refresh_Token_Model
-from app.schemas.auth_schema import LoginResponse,RefreshTokenRequest,ChangePasswordRequest,UserResponse
-from app.core.auth_service import authenticate_user,create_tokens_for_user
+from app.models.user_session_model import User_Session_Model
+from app.schemas.auth_schema import LoginResponse,RefreshTokenRequest,ChangePasswordRequest,UserResponse, LoginRequest
+from app.core.auth_service import authenticate_user,create_session_for_user
 
 employee_auth_router = APIRouter()
 
 @employee_auth_router.post("/auth/login",response_model=LoginResponse)
-async def login(form_data: Annotated[OAuth2PasswordRequestForm,Depends()],session: Annotated[AsyncSession,Depends(getdb)]):
+async def login(request: Request,credentials: LoginRequest,db: AsyncSession = Depends(getdb)):
     user = await authenticate_user(
-        session=session,
-        email=form_data.username,
-        password=form_data.password,
+        session=db,
+        email=str(credentials.email),
+        password=credentials.password,
     )
 
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
-            headers={
-                "WWW-Authenticate": "Bearer"
-            },
         )
 
-    tokens = await create_tokens_for_user(
-        session=session,
+    return await create_session_for_user(
+        session=db,
         user=user,
+        ip_address=request.client.host,
+        user_agent=request.headers.get("user-agent"),
     )
-
-    return tokens
 
 
 @employee_auth_router.get("/user",response_model=UserResponse)
@@ -67,7 +64,7 @@ async def refresh_token(data: RefreshTokenRequest,session: Annotated[AsyncSessio
             detail="Invalid refresh token",
         )
 
-    result = await session.execute(select(Refresh_Token_Model).where(Refresh_Token_Model.token_jti == jti))
+    result = await session.execute(select(User_Session_Model).where(User_Session_Model.token_jti == jti))
     stored_token = result.scalar_one_or_none()
 
     if stored_token is None:
@@ -129,7 +126,7 @@ async def refresh_token(data: RefreshTokenRequest,session: Annotated[AsyncSessio
         )
     )
 
-    new_refresh_record = Refresh_Token_Model(
+    new_refresh_record = User_Session_Model(
         user_id=user.id,
         token_jti=new_jti,
         token_hash=hash_token(
@@ -165,7 +162,7 @@ async def logout(data: RefreshTokenRequest,session: Annotated[AsyncSession,Depen
             "message": "Logged out successfully"
         }
 
-    result = await session.execute(select(Refresh_Token_Model).where(Refresh_Token_Model.token_jti == jti))
+    result = await session.execute(select(User_Session_Model).where(User_Session_Model.token_jti == jti))
     stored_token = result.scalar_one_or_none()
 
     if stored_token and not stored_token.revoked:
