@@ -15,7 +15,7 @@ async def get_assessment_category(db:AsyncSession=Depends(getdb)):
     result = await db.execute(list_all_assessment)
     return result.scalars().all()
 
-@assessment_category_router.post("/assessmentcategory", response_model=Assessment_Category_Schema_Response)
+@assessment_category_router.post("/assessmentcategory/add", response_model=Assessment_Category_Schema_Response)
 async def create_assessment_category(assessment:Assessment_Category_Schema, db:AsyncSession=Depends(getdb)):
     check_assessment = select(Assessment_Category_Model).where(Assessment_Category_Model.assessment_name == assessment.assessment_name)
     result = await db.execute(check_assessment)
@@ -34,7 +34,7 @@ async def create_assessment_category(assessment:Assessment_Category_Schema, db:A
 
     return create_new_assessment
 
-@assessment_category_router.patch("/assessmentcategory", response_model=Assessment_Category_Schema_Response)
+@assessment_category_router.patch("/assessmentcategory/update/{id}", response_model=Assessment_Category_Schema_Response)
 async def update_assessment_category(id, assessment:Assessment_Category_Schema, db:AsyncSession=Depends(getdb)):
     check_assessment = select(Assessment_Category_Model).where(Assessment_Category_Model.id == id)
     result = await db.execute(check_assessment)

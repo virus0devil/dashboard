@@ -1,15 +1,40 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { Route, Routes } from 'react-router-dom'
 import './App.css'
+import Sidebar from './components/Layouts/Sidebar'
+import Header from './components/Layouts/Header'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+function AppRoutes() {
   return (
-    <>This is test</>
+    <Routes>
+      {/* <Route path="/" element={<Dashboard />} /> */}
+      {/* <Route path="/assessment" element={<AssessmentType />} />
+              <Route path="/master_vulnerabilities" element={<MasterVulnerabilities />} />
+              <Route path="/compliance" element={<ComplianceType />} />
+              <Route path="/pentest/inprogress" element={<InProgress />} />
+              <Route path="/pentest/completed_projects" element={<CompletedProjects />} />
+              <Route path="/onboard_client" element={<OnboardClient />} />
+              <Route path="/manage_client" element={<ManageClient />} />
+              <Route path="/manage_roles" element={<RolesManagement />} />
+              <Route path="/team_management" element={<TeamManagement />} /> */}
+    </Routes>
   )
 }
 
-export default App
+function App() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <main className="flex-1 overflow-y-auto p-6">
+            <AppRoutes />
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
