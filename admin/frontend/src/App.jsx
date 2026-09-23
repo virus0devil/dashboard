@@ -4,6 +4,7 @@ import './App.css'
 import Sidebar from './components/Layouts/Sidebar'
 import Header from './components/Layouts/Header'
 import { AssessmentCategory } from './components/Layouts/Pages/asset_management/AssessmentCategory'
+import { ComplianceCategory } from './components/Layouts/Pages/asset_management/ComplianceCategory'
 // import PentestLoader from './components/loading/PentestLoader'
 
 
@@ -12,14 +13,14 @@ function AppRoutes() {
     <Routes>
       {/* <Route path="/" element={<Dashboard />} /> */}
       <Route path="/assessment" element={<AssessmentCategory />} />
-      {/* <Route path="/master_vulnerabilities" element={<MasterVulnerabilities />} />
-      <Route path="/compliance" element={<ComplianceType />} />
-      <Route path="/pentest/inprogress" element={<InProgress />} />
+      {/* <Route path="/master_vulnerabilities" element={<MasterVulnerabilities />} /> */}
+      <Route path="/compliance" element={<ComplianceCategory />} />
+      {/* <Route path="/pentest/inprogress" element={<InProgress />} />
       <Route path="/pentest/completed_projects" element={<CompletedProjects />} />
       <Route path="/onboard_client" element={<OnboardClient />} />
       <Route path="/manage_client" element={<ManageClient />} />
       <Route path="/manage_roles" element={<RolesManagement />} />
-      <Route path="/team_management" element={<TeamManagement />} /> */}
+      <Route path="/team_management" element={<TeamManagement />} />  */}
     </Routes>
   )
 }

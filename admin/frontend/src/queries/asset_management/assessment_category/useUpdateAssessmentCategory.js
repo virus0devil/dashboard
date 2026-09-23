@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import AssessmentCategoryAPI from "../../API/AssessmentCategoryAPI";
+import AssessmentCategoryAPI from "../../../API/AssessmentCategoryAPI";
 
 export const useUpdateAssessmentCategory = () => {
     const queryClient = useQueryClient();

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import AssessmentCategoryAPI from "../../API/AssessmentCategoryAPI";
+import AssessmentCategoryAPI from "../../../API/AssessmentCategoryAPI";
 
 export const useAddAssessmentCategory  = () => {
     try {
@@ -13,7 +13,7 @@ export const useAddAssessmentCategory  = () => {
             }
         })
     } catch (error) {
-        console.error("Error Creating Employee:", error);
+        console.error("Error Creating Assessment:", error);
         throw error;
     }
 };

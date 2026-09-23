@@ -14,7 +14,7 @@ async def get_compliance_category(db:AsyncSession=Depends(getdb)):
     result = await db.execute(list_all_compliance)
     return result.scalars().all()
 
-@compliance_category_router.post("/compliancecategory", response_model=Compliance_Category_Schema_Response)
+@compliance_category_router.post("/compliancecategory/add", response_model=Compliance_Category_Schema_Response)
 async def create_compliance_category(compliance:Compliance_Category_Schema, db:AsyncSession=Depends(getdb)):
     check_compliance = select(Compliance_Category_Model).where(Compliance_Category_Model.compliance_name == compliance.compliance_name)
     result = await db.execute(check_compliance)
@@ -33,7 +33,7 @@ async def create_compliance_category(compliance:Compliance_Category_Schema, db:A
 
     return create_new_compliance
 
-@compliance_category_router.patch("/compliancecategory", response_model=Compliance_Category_Schema_Response)
+@compliance_category_router.patch("/compliancecategory/update/{id}", response_model=Compliance_Category_Schema_Response)
 async def update_compliance_category(id, compliance:Compliance_Category_Schema, db:AsyncSession=Depends(getdb)):
     check_compliance = select(Compliance_Category_Model).where(Compliance_Category_Model.id == id)
     result = await db.execute(check_compliance)

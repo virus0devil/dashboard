@@ -5,55 +5,55 @@ import { EyeIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
 import { useDebounce } from "../../../../hooks/useDebounce";
 import { useToast } from "../../../../hooks/useToast";
 
-import { useAssessmentCategory } from "../../../../queries/asset_management/assessment_category/useAssessmentCategory";
-import { useAddAssessmentCategory } from "../../../../queries/asset_management/assessment_category/useAddAssessmentCategory";
-import { useUpdateAssessmentCategory } from "../../../../queries/asset_management/assessment_category/useUpdateAssessmentCategory";
+import { usecomplianceCategory } from "../../../../queries/asset_management/compliance_category/useComplianceCategory";
+import { useAddComplianceCategory } from "../../../../queries/asset_management/compliance_category/useAddComplianceCategory";
+import { useUpdateComplianceCategory } from "../../../../queries/asset_management/compliance_category/useUpdateComplianceCategory";
 
-export const AssessmentCategory = () => {
-    const [addAssessment, setAddAssessment] = useState(false);
+export const ComplianceCategory = () => {
+    const [addCompliance, setAddCompliance] = useState(false);
     const [mode, setMode] = useState("create");
-    const [assessmentData, setAssessmentData] = useState(null);
-    const [assessmentSearch, setAssessmentSearch] = useState("");
+    const [complianceData, setComplianceData] = useState(null);
+    const [complianceSearch, setComplianceSearch] = useState("");
 
     const formRef = useRef(null);
 
-    const {data: assessmentCategories = [],isLoading} = useAssessmentCategory();
+    const {data: complianceCategories = [],isLoading} = usecomplianceCategory();
 
     const { showToast } = useToast();
 
-    const addMutation = useAddAssessmentCategory();
-    const updateMutation = useUpdateAssessmentCategory();
+    const addMutation = useAddComplianceCategory();
+    const updateMutation = useUpdateComplianceCategory();
 
-    const debouncedAssessment = useDebounce(assessmentSearch, 300);
+    const debouncedCompliance = useDebounce(complianceSearch, 300);
 
     const filteredData = useMemo(() => {
-        const searchValue = debouncedAssessment.toLowerCase();
+        const searchValue = debouncedCompliance.toLowerCase(); 
 
-        return assessmentCategories.filter((item) =>
-            (item?.assessment_name ?? "")
+        return complianceCategories.filter((item) =>
+            (item?.compliance_name ?? "")
                 .toLowerCase()
                 .includes(searchValue)
         );
-    }, [assessmentCategories, debouncedAssessment]);
+    }, [complianceCategories, debouncedCompliance]);
 
-    const openModal = (modalMode, assessment = null) => {
+    const openModal = (modalMode, compliance = null) => {
         setMode(modalMode);
-        setAssessmentData(assessment);
-        setAddAssessment(true);
+        setComplianceData(compliance);
+        setAddCompliance(true);
     };
 
     const closeModal = () => {
-        setAddAssessment(false);
-        setAssessmentData(null);
+        setAddCompliance(false);
+        setComplianceData(null);
         setMode("create");
     };
 
-    const handleView = (assessment) => {
-        openModal("view", assessment);
+    const handleView = (compliance) => {
+        openModal("view", compliance);
     };
 
-    const handleEdit = (assessment) => {
-        openModal("edit", assessment);
+    const handleEdit = (compliance) => {
+        openModal("edit", compliance);
     };
 
     const handleSubmit = async (data) => {
@@ -63,25 +63,25 @@ export const AssessmentCategory = () => {
 
                 showToast({
                     type: "success",
-                    message: "Assessment added successfully",
+                    message: "Compliance added successfully",
                 });
             }
 
             if (mode === "edit") {
                 await updateMutation.mutateAsync({
-                    assessmentId: assessmentData.id,
-                    assessmentData: data,
+                    complianceId: complianceData.id,
+                    complianceData: data,
                 });
 
                 showToast({
                     type: "success",
-                    message: "Assessment updated successfully",
+                    message: "Compliance updated successfully",
                 });
             }
 
             closeModal();
         } catch (err) {
-            console.error("Assessment operation failed:", err);
+            console.error("Compliance operation failed:", err);
 
             showToast({
                 type: "error",
@@ -98,16 +98,16 @@ export const AssessmentCategory = () => {
         <div className="space-y-4 relative">
 
             <SearchDetails
-                value={assessmentSearch}
-                onChange={(e) => setAssessmentSearch(e.target.value)}
-                placeholder="Search Assessment"
+                value={complianceSearch}
+                onChange={(e) => setComplianceSearch(e.target.value)}
+                placeholder="Search Compliance"
             />
 
             <div className="border bg-white w-full rounded-2xl border-indigo-50 shadow-sm">
                 <div className="border-b border-gray-200 h-20 rounded-t-2xl flex items-center justify-between px-6">
 
                     <div className="font-medium text-lg">
-                        Assessment Types
+                        Compliance Types
                     </div>
 
                     <button
@@ -116,7 +116,7 @@ export const AssessmentCategory = () => {
                         className="cursor-pointer bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
                     >
                         <Plus className="w-4 h-4" />
-                        <span>Add Assessment</span>
+                        <span>Add Compliance</span>
                     </button>
 
                 </div>
@@ -124,13 +124,13 @@ export const AssessmentCategory = () => {
 
             <div>
                 <Layout
-                    assessmentcategory={filteredData}
+                    compliancecategory={filteredData}
                     onView={handleView}
                     onEdit={handleEdit}
                 />
             </div>
 
-            {addAssessment && (
+            {addCompliance && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
 
                     <div className="bg-white w-full max-w-md max-h-[85vh] rounded-2xl shadow-2xl flex flex-col">
@@ -138,9 +138,9 @@ export const AssessmentCategory = () => {
                         <div className="flex bg-gray-50 rounded-t-2xl justify-between items-center px-6 py-4">
 
                             <h2 className="text-lg font-semibold text-gray-700">
-                                {mode === "create" && "Add Assessment"}
-                                {mode === "edit" && "Update Assessment"}
-                                {mode === "view" && "View Assessment"}
+                                {mode === "create" && "Add Compliance"}
+                                {mode === "edit" && "Update Compliance"}
+                                {mode === "view" && "View Compliance"}
                             </h2>
 
                             <button
@@ -156,10 +156,10 @@ export const AssessmentCategory = () => {
 
                         <div className="p-6 overflow-y-auto flex-1">
 
-                            <AssessmentForm
+                            <ComplianceForm
                                 ref={formRef}
                                 mode={mode}
-                                initialData={assessmentData}
+                                initialData={complianceData}
                                 onSubmit={handleSubmit}
                             />
 
@@ -198,11 +198,7 @@ export const AssessmentCategory = () => {
     );
 };
 
-export const SearchDetails = ({
-    value,
-    onChange,
-    placeholder,
-}) => {
+export const SearchDetails = ({value,onChange,placeholder}) => {
     return (
         <div className="flex gap-4">
 
@@ -227,11 +223,11 @@ export const SearchDetails = ({
     );
 };
 
-export const AssessmentForm = forwardRef(
+export const ComplianceForm = forwardRef(
     ({ mode, initialData, onSubmit }, ref) => {
 
         const [formData, setFormData] = useState({
-            assessment_name: "",
+            compliance_name: "",
         });
 
         useEffect(() => {
@@ -241,7 +237,7 @@ export const AssessmentForm = forwardRef(
                 });
             } else {
                 setFormData({
-                    assessment_name: "",
+                    compliance_name: "",
                 });
             }
         }, [initialData]);
@@ -269,7 +265,7 @@ export const AssessmentForm = forwardRef(
 
         return (
             <form
-                name="Assessment"
+                name="Compliance"
                 onSubmit={(e) => e.preventDefault()}
                 className="space-y-5"
             >
@@ -277,19 +273,19 @@ export const AssessmentForm = forwardRef(
                 <div>
 
                     <label
-                        htmlFor="assessment_name"
+                        htmlFor="compliance_name"
                         className="block text-sm font-medium text-gray-700 mb-2"
                     >
-                        Assessment Name
+                        Compliance Name
                     </label>
 
                     <input
-                        id="assessment_name"
-                        name="assessment_name"
+                        id="compliance_name"
+                        name="compliance_name"
                         type="text"
-                        value={formData.assessment_name}
+                        value={formData.compliance_name}
                         onChange={handleChange}
-                        placeholder="Enter Assessment Name"
+                        placeholder="Enter Compliance Name"
                         disabled={isView}
                         className="w-full px-3 py-2.5 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-500"
                     />
@@ -301,11 +297,7 @@ export const AssessmentForm = forwardRef(
     }
 );
 
-export const Layout = ({
-    assessmentcategory = [],
-    onView,
-    onEdit,
-}) => {
+export const Layout = ({compliancecategory = [],onView,onEdit}) => {
     return (
         <div className="border bg-white w-full h-full rounded-2xl border-indigo-50 shadow-sm">
 
@@ -316,39 +308,39 @@ export const Layout = ({
                     <thead>
                         <tr>
                             <LayoutHeading heading="ID" />
-                            <LayoutHeading heading="Assessment Types" />
+                            <LayoutHeading heading="Compliance Types" />
                             <LayoutHeading heading="Actions" />
                         </tr>
                     </thead>
 
                     <tbody className="divide-y divide-gray-100">
 
-                        {assessmentcategory.length === 0 ? (
+                        {compliancecategory.length === 0 ? (
 
                             <tr>
                                 <td
                                     colSpan={3}
                                     className="px-6 py-8 text-center text-gray-500"
                                 >
-                                    No Assessment Found
+                                    No Compliance Found
                                 </td>
                             </tr>
 
                         ) : (
 
-                            assessmentcategory.map((assessment) => (
+                            compliancecategory.map((compliance) => (
 
                                 <tr
-                                    key={assessment.id}
+                                    key={compliance.id}
                                     className="hover:bg-slate-50 transition"
                                 >
 
                                     <td className="p-3 text-sm text-center">
-                                        {assessment.id}
+                                        {compliance.id}
                                     </td>
 
                                     <td className="p-3 text-sm text-center">
-                                        {assessment.assessment_name}
+                                        {compliance.compliance_name}
                                     </td>
 
                                     <td className="p-3">
@@ -358,30 +350,30 @@ export const Layout = ({
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    onView?.(assessment)
+                                                    onView?.(compliance)
                                                 }
                                                 className="group bg-gray-200 shadow relative cursor-pointer rounded p-2 text-gray-600 hover:bg-indigo-50 hover:text-indigo-700"
-                                                aria-label="View Assessment"
+                                                aria-label="View Compliance"
                                             >
                                                 <EyeIcon className="h-5 w-5" />
 
                                                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 scale-0 whitespace-nowrap rounded bg-black px-2 py-1 text-xs text-white transition group-hover:scale-100">
-                                                    View Assessment
+                                                    View Compliance
                                                 </span>
                                             </button>
 
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    onEdit?.(assessment)
+                                                    onEdit?.(compliance)
                                                 }
                                                 className="group bg-gray-200 shadow relative cursor-pointer rounded p-2 text-gray-600 hover:bg-indigo-50 hover:text-indigo-700"
-                                                aria-label="Edit Assessment"
+                                                aria-label="Edit Compliance"
                                             >
                                                 <PencilSquareIcon className="h-5 w-5" />
 
                                                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 scale-0 whitespace-nowrap rounded bg-black px-2 py-1 text-xs text-white transition group-hover:scale-100">
-                                                    Edit Assessment
+                                                    Edit Compliance
                                                 </span>
                                             </button>
 

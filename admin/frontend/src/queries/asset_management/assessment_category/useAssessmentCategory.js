@@ -1,5 +1,5 @@
 import {useQuery} from "@tanstack/react-query"
-import AssessmentCategoryAPI from "../../API/AssessmentCategoryAPI"
+import AssessmentCategoryAPI from "../../../API/AssessmentCategoryAPI"
 
 const fetchAssessmentCategory = async () => {
     try{
