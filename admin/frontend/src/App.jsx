@@ -3,8 +3,9 @@ import { Route, Routes } from 'react-router-dom'
 import './App.css'
 import Sidebar from './components/Layouts/Sidebar'
 import Header from './components/Layouts/Header'
-import { AssessmentCategory } from './components/Layouts/Pages/asset_management/AssessmentCategory'
-import { ComplianceCategory } from './components/Layouts/Pages/asset_management/ComplianceCategory'
+import { AssessmentCategory } from './components/Layouts/Pages/asset_management/AssessmentCategory';
+import { ComplianceCategory } from './components/Layouts/Pages/asset_management/ComplianceCategory';
+import { MasterVulnerabilities } from './components/Layouts/Pages/asset_management/MasterVulnerabilities';
 // import PentestLoader from './components/loading/PentestLoader'
 
 
@@ -13,7 +14,7 @@ function AppRoutes() {
     <Routes>
       {/* <Route path="/" element={<Dashboard />} /> */}
       <Route path="/assessment" element={<AssessmentCategory />} />
-      {/* <Route path="/master_vulnerabilities" element={<MasterVulnerabilities />} /> */}
+      <Route path="/master_vulnerabilities" element={<MasterVulnerabilities />} />
       <Route path="/compliance" element={<ComplianceCategory />} />
       {/* <Route path="/pentest/inprogress" element={<InProgress />} />
       <Route path="/pentest/completed_projects" element={<CompletedProjects />} />

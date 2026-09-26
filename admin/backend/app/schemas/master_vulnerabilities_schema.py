@@ -10,6 +10,13 @@ class master_vulnerabilities_Schema(BaseModel):
             default="IDOR"
         )
     ]
+    category:Annotated[
+        str,
+        Field(
+            max_length=100,
+            description="Category"
+        )
+    ]
     cvss_vector:Annotated[
         str,
         Field(
@@ -67,6 +74,7 @@ class master_vulnerabilities_Schema_Response(BaseModel):
         )
     ]
     vulnerability_name:str
+    category:str
     cvss_score: float = None
     severity: str = None
     cvss_vector:str

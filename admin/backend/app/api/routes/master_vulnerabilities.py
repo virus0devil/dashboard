@@ -31,6 +31,7 @@ async def create_vulnerability(vulnerability:master_vulnerabilities_Schema, db:S
     severity = "Low" if cvss_score < 4 else "Medium" if cvss_score < 7 else "High" if cvss_score < 9 else "Critical"
     create_new_vuln = master_vulnerabilities_Models(
         vulnerability_name=vulnerability.vulnerability_name,
+        category=vulnerability.category,
         cvss_score=cvss_score,
         severity=severity,
         cvss_vector=vulnerability.cvss_vector,
@@ -47,19 +48,38 @@ async def create_vulnerability(vulnerability:master_vulnerabilities_Schema, db:S
 
     return create_new_vuln
 
-@master_vulnerabilities_route.patch("/masterVulnerabilities/update/{vid}", response_model=master_vulnerabilities_Schema_Response)
-async def update_vulnerability(vid, vulnerability:master_vulnerabilities_Schema, db:Session = Depends(getdb)):
+@master_vulnerabilities_route.patch("/masterVulnerabilities/update/{vid}",response_model=master_vulnerabilities_Schema_Response)
+async def update_vulnerability(vid: str,vulnerability: master_vulnerabilities_Schema, db: Session = Depends(getdb)):
     vuln_exist = select(master_vulnerabilities_Models).where(master_vulnerabilities_Models.vid == vid)
     result = await db.execute(vuln_exist)
     check_vuln_obj = result.scalar_one_or_none()
 
     if not check_vuln_obj:
-        raise ValueError("Vulnerability not found")
+        raise HTTPException(status_code=404,detail="Vulnerability not found")
 
-    for field,value in vulnerability.dict(exclude_unset=True).items():
-        setattr(check_vuln_obj, field,value)
+    update_data = vulnerability.dict(exclude_unset=True)
+    update_data.pop("vid", None)
 
-    db.commit()
-    db.refresh(check_vuln_obj)
+    if "cvss_vector" in update_data:
+        cvss_score = CVSS3(update_data["cvss_vector"]).scores()[0]
+
+        severity = (
+            "Low"
+            if cvss_score < 4
+            else "Medium"
+            if cvss_score < 7
+            else "High"
+            if cvss_score < 9
+            else "Critical"
+        )
+
+        update_data["cvss_score"] = cvss_score
+        update_data["severity"] = severity
+
+    for field, value in update_data.items():
+        setattr(check_vuln_obj, field, value)
+
+    await db.commit()
+    await db.refresh(check_vuln_obj)
 
     return check_vuln_obj
