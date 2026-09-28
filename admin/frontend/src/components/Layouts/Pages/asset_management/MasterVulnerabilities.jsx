@@ -16,13 +16,14 @@ export const MasterVulnerabilities = () => {
     const [addMasterVulnerabilities, setAddMasterVulnerabilities] = useState(false);
     const [mode, setMode] = useState("create");
     const [mastervulnerabilitiesData, setmastervulnerabilitiesData] = useState(null);
+    const { data: assessmentTypes = [] } = useAssessmentCategory();
     
 
     const [vidSearch, setVidSearch] = useState("");
-    const [masterVulnerabilitiesSearch, setmasterVulnerabilitiesSearch] = useState("");
-    const [categorySearch, setcategorySearch] = useState("");
+    const [masterVulnerabilitiesSearch, setMasterVulnerabilitiesSearch] = useState("");
+    const [categorySearch, setCategorySearch] = useState("");
     const [severitySearch, setSeveritySearch] = useState("");
-    const [cwe_idSearch, setcwe_idSearch] = useState("");
+    const [cwe_idSearch, setCweIdSearch] = useState("");
     const [gradeSearch, setGradeSearch] = useState("");
 
     const formRef = useRef(null);
@@ -37,55 +38,63 @@ export const MasterVulnerabilities = () => {
     const debouncedvulnerabilities = useDebounce(masterVulnerabilitiesSearch, 300);
 
     const filteredData = useMemo(() => {
-        const vid = (vidSearch ?? "").toLowerCase().trim();
-        const vuln = (masterVulnerabilitiesSearch ?? "").toLowerCase().trim();
-        const category = (categorySearch ?? "").toLowerCase().trim();
-        const severity = (severitySearch ?? "").toLowerCase().trim();
-        const cwe = (cwe_idSearch ?? "").toLowerCase().trim();
-        const grade = (gradeSearch ?? "").toLowerCase().trim();
+        const vid = vidSearch.toLowerCase().trim();
+        const vuln = masterVulnerabilitiesSearch.toLowerCase().trim();
+        const category = categorySearch.toLowerCase().trim();
+        const severity = severitySearch.toLowerCase().trim();
 
         return MasterVulnerabilities.filter((item) => {
-            const vidMatch = vid
-                ? String(item?.vid ?? "").toLowerCase().includes(vid)
-                : true;
+            const categoryObj = assessmentTypes.find(
+                (cat) => String(cat.id) === String(item.category)
+            );
 
-            const vulnMatch = vuln
-                ? String(item?.vulnerability_name ?? "").toLowerCase().includes(vuln)
-                : true;
+            const categoryName = String(
+                categoryObj?.assessment_name ?? ""
+            )
+                .toLowerCase()
+                .trim();
 
-            const categoryMatch = category
-                ? String(item?.category ?? "").toLowerCase().includes(category)
-                : true;
+            const categoryId = String(item?.category ?? "")
+                .toLowerCase()
+                .trim();
 
-            const severityMatch = severity
-                ? String(item?.severity ?? "").toLowerCase().includes(severity)
-                : true;
+            const vidMatch =
+                !vid ||
+                String(item?.vid ?? "")
+                    .toLowerCase()
+                    .includes(vid);
 
-            const cweMatch = cwe
-                ? String(item?.cwe_id ?? "").toLowerCase().includes(cwe)
-                : true;
+            const vulnMatch =
+                !vuln ||
+                String(item?.vulnerability_name ?? "")
+                    .toLowerCase()
+                    .includes(vuln);
 
-            const gradeMatch = grade
-                ? String(item?.grade ?? "").toLowerCase().includes(grade)
-                : true;
+            const categoryMatch =
+                !category ||
+                categoryId.includes(category) ||
+                categoryName.includes(category);
+
+            const severityMatch =
+                !severity ||
+                String(item?.severity ?? "")
+                    .toLowerCase()
+                    .includes(severity);
 
             return (
                 vidMatch &&
                 vulnMatch &&
                 categoryMatch &&
-                severityMatch &&
-                cweMatch &&
-                gradeMatch
+                severityMatch
             );
         });
     }, [
         MasterVulnerabilities,
+        assessmentTypes,
         vidSearch,
         masterVulnerabilitiesSearch,
         categorySearch,
         severitySearch,
-        cwe_idSearch,
-        gradeSearch
     ]);
 
     const openModal = (modalMode, vulnerabilities = null) => {
@@ -153,28 +162,28 @@ export const MasterVulnerabilities = () => {
     return (
         <div className="space-y-4 relative">
 
-            <div className="flex gap-4">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
                 <SearchDetails
-                    value={masterVulnerabilitiesSearch}
-                    onChange={(e) => setMasterVulnerabilitiesSearch(e.target.value)}
+                    value={vidSearch}
+                    onChange={(e) => setVidSearch(e.target.value)}
                     placeholder="Search VID"
                 />
 
                 <SearchDetails
-                    // value={MasterVulnerabilitiesSearch}
-                    // onChange={(e) => setMasterVulnerabilitiesSearch(e.target.value)}
+                    value={masterVulnerabilitiesSearch}
+                    onChange={(e) => setMasterVulnerabilitiesSearch(e.target.value)}
                     placeholder="Search Vulnerability"
                 />
 
                 <SearchDetails
-                    // value={}
-                    // onChange={(e) => setMasterVulnerabilitiesSearch(e.target.value)}
+                    value={categorySearch}
+                    onChange={(e) => setCategorySearch(e.target.value)}
                     placeholder="Search Category"
                 />
 
                 <SearchDetails
-                    // value={MasterVulnerabilitiesSearch}
-                    // onChange={(e) => setMasterVulnerabilitiesSearch(e.target.value)}
+                    value={severitySearch}
+                    onChange={(e) => setSeveritySearch(e.target.value)}
                     placeholder="Search Severity"
                 />
             </div>
@@ -288,17 +297,36 @@ export const MasterVulnerabilities = () => {
 
 const SearchDetails = ({ value, onChange, placeholder }) => {
     return (
-        <div className="flex gap-4">
-            <div className="w-full max-w-sm min-w-[200px]">
-                <div className="relative flex items-center">
-                    <Search className="absolute w-5 h-5 left-2.5 text-slate-600" />
-                    <input
-                        value={value}
-                        onChange={onChange}
-                        placeholder={placeholder}
-                        className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md pl-10 pr-3 py-2 focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm"
+        <div className="w-full">
+            <div className="relative group">
+                <Search
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 transition-colors duration-200 group-focus-within:text-indigo-500" strokeWidth={2}
                     />
-                </div>
+
+                <input
+                    type="text"
+                    value={value}
+                    onChange={onChange}
+                    placeholder={placeholder}
+                    className="w-full h-10 rounded-lg border border-slate-200 bg-white pl-9 pr-9 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                />
+
+                {value && (
+                    <button
+                        type="button"
+                        onClick={() =>
+                            onChange({
+                                target: {
+                                    value: "",
+                                },
+                            })
+                        }
+                        className="absolute right-2 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        aria-label={`Clear ${placeholder}`}
+                    >
+                        <X className="h-3.5 w-3.5" />
+                    </button>
+                )}
             </div>
         </div>
     );

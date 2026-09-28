@@ -8,5 +8,5 @@ class Assessment_Category_Model(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     assessment_name = Column(String(100), nullable=False)
 
-    # client_assessment = relationship("Client_Assessment_Model", back_populates="assessment_type")
+    client_assessment = relationship("Assign_Client_Assessment_Model", back_populates="assessment_category")
     # assets = relationship("Assets_Model", back_populates="assessment_type")

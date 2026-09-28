@@ -11,9 +11,9 @@ from app.core.employee_security import hash_password
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy import select, func, Integer
 
-employee_management_routes = APIRouter()
+employee_management_router = APIRouter()
 
-@employee_management_routes.get("/employee-details", response_model=List[Employee_Management_Response_Schema])
+@employee_management_router.get("/employee-details", response_model=List[Employee_Management_Response_Schema])
 async def list_employee(db: AsyncSession = Depends(getdb)):
     list_all_employee = select(Employee_Management_Model)
     result = await db.execute(list_all_employee)
@@ -43,7 +43,7 @@ async def generate_employee_id(db: AsyncSession) -> str:
 
     return f"{prefix}{max_number + 1:04d}"
 
-@employee_management_routes.post("/employee-details/add", response_model=Employee_Management_Response_Schema)
+@employee_management_router.post("/employee-details/add", response_model=Employee_Management_Response_Schema)
 async def create_employee(employee: Employee_Management_Schema, db: AsyncSession = Depends(getdb)):
     existing_employee = select(Employee_Management_Model).where(Employee_Management_Model.email == employee.email)
     result = await db.execute(existing_employee)
@@ -74,7 +74,7 @@ async def create_employee(employee: Employee_Management_Schema, db: AsyncSession
 
     return new_employee
 
-@employee_management_routes.patch("/employee-details/update/{employee_id}", response_model=Employee_Management_Response_Schema)
+@employee_management_router.patch("/employee-details/update/{employee_id}", response_model=Employee_Management_Response_Schema)
 async def update_employee(employee_id, employee:Employee_Management_Schema, db:AsyncSession = Depends(getdb)):
     employee_check = select(Employee_Management_Model).where(Employee_Management_Model.employee_id == employee_id)
     result = await db.execute(employee_check)
@@ -99,7 +99,7 @@ async def update_employee(employee_id, employee:Employee_Management_Schema, db:A
 
 # Actions button endpoints
 
-@employee_management_routes.get("/employee-details/details/{employee_id}", response_model=Employee_Management_Response_Schema)
+@employee_management_router.get("/employee-details/details/{employee_id}", response_model=Employee_Management_Response_Schema)
 async def get_employee_details(employee_id, db:AsyncSession = Depends(getdb)):
     check_exist_employee = select(Employee_Management_Model).where(Employee_Management_Model.employee_id == employee_id)
     result = await db.execute(check_exist_employee)
@@ -110,7 +110,7 @@ async def get_employee_details(employee_id, db:AsyncSession = Depends(getdb)):
     
     return employee
 
-@employee_management_routes.patch("/employee-details/activate/{employee_id}", response_model=Employee_Management_Response_Schema)
+@employee_management_router.patch("/employee-details/activate/{employee_id}", response_model=Employee_Management_Response_Schema)
 async def activate(employee_id, db:AsyncSession = Depends(getdb)):
     result = await db.execute(select(Employee_Management_Model).where(Employee_Management_Model.employee_id == employee_id))
     employee_check_obj = result.scalar_one_or_none()
@@ -128,7 +128,7 @@ async def activate(employee_id, db:AsyncSession = Depends(getdb)):
 
     return employee_check_obj
 
-@employee_management_routes.patch("/employee-details/deactivate/{employee_id}", response_model=Employee_Management_Response_Schema)
+@employee_management_router.patch("/employee-details/deactivate/{employee_id}", response_model=Employee_Management_Response_Schema)
 async def deactivate(employee_id, db:AsyncSession = Depends(getdb)):
     result = await db.execute(select(Employee_Management_Model).where(Employee_Management_Model.employee_id == employee_id))
     employee_check_obj = result.scalar_one_or_none()
