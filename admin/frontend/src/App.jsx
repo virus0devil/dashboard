@@ -6,7 +6,8 @@ import Header from './components/Layouts/Header'
 import { AssessmentCategory } from './components/Layouts/Pages/asset_management/AssessmentCategory';
 import { ComplianceCategory } from './components/Layouts/Pages/asset_management/ComplianceCategory';
 import { MasterVulnerabilities } from './components/Layouts/Pages/asset_management/MasterVulnerabilities';
-import { OnBoardClient } from './components/Layouts/Pages/project_management/onboard_client'
+import { OnBoardClient } from './components/Layouts/Pages/project_management/OnBoardClient'
+import { ManageClient } from './components/Layouts/Pages/project_management/ManageClient'
 // import PentestLoader from './components/loading/PentestLoader'
 
 
@@ -18,6 +19,7 @@ function AppRoutes() {
       <Route path="/master_vulnerabilities" element={<MasterVulnerabilities />} />
       <Route path="/compliance" element={<ComplianceCategory />} />
       <Route path="/onboard_client" element={<OnBoardClient />} />
+      <Route path="/manage_client" element={<ManageClient />} />
       {/* <Route path="/pentest/inprogress" element={<InProgress />} />
       <Route path="/pentest/completed_projects" element={<CompletedProjects />} />
       <Route path="/manage_client" element={<ManageClient />} />
