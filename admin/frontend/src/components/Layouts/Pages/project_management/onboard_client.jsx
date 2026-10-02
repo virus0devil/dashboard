@@ -1,5 +1,5 @@
 import React, { useState, useMemo, forwardRef, useEffect, useRef, useImperativeHandle } from "react";
-import { Plus, Search, X } from "lucide-react";
+import { Plus, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { EyeIcon, PencilSquareIcon, Bars3Icon } from "@heroicons/react/24/outline";
 
 import { useDebounce } from "../../../../hooks/useDebounce";
@@ -19,32 +19,31 @@ export const OnBoardClient = () => {
     const [mode, setMode] = useState("create");
     const [clientData, setClientData] = useState(null);
     const [clientSearch, setClientSearch] = useState("");
+    const [clientPage, setClientPage] = useState(1);
+    const [clientPageSize, setClientPageSize] = useState(10);
     const { data: assessmentsData } = useAssessmentCategory();
+
     
     const [openAssignModal, setOpenAssignModal] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null);
     const assessments = useMemo(() => assessmentsData || [], [assessmentsData]);
 
     const formRef = useRef(null);
+    const debouncedClient = useDebounce(clientSearch, 300);
 
-    const { data: onboardclient = [], isLoading } = useOnBoardClient();
+    useEffect(() => {
+        setClientPage(1);
+    }, [debouncedClient]);
+
+    const {data: clientResponse,isLoading,isFetching,} = useOnBoardClient({search: debouncedClient,page: clientPage,limit: clientPageSize,});
+    const onboardclient = clientResponse?.data ?? [];
+    const total = clientResponse?.total ?? 0;
+    const hasMore = clientResponse?.hasMore ?? false;
 
     const { showToast } = useToast();
 
     const addMutation = useAddOnBoardClient();
     const updateMutation = useUpdateOnBoardClient();
-
-    const debouncedClient = useDebounce(clientSearch, 300);
-
-    const filteredData = useMemo(() => {
-        const searchValue = debouncedClient.toLowerCase();
-
-        return onboardclient.filter((item) =>
-            (item?.compliance_name ?? "")
-                .toLowerCase()
-                .includes(searchValue)
-        );
-    }, [onboardclient, debouncedClient]);
 
     const openModal = (modalMode, client = null) => {
         setMode(modalMode);
@@ -84,8 +83,8 @@ export const OnBoardClient = () => {
 
             if (mode === "edit") {
                 await updateMutation.mutateAsync({
-                    clientId: clientData.id,
-                    clientData: data,
+                    id: clientData.id,
+                    data: data,
                 });
 
                 showToast({
@@ -139,11 +138,76 @@ export const OnBoardClient = () => {
 
             <div>
                 <Layout
-                    client={filteredData}
+                    client={onboardclient}
                     onView={handleView}
                     onEdit={handleEdit}
                     onSelectAssessment={handleSelectAssessment}
                 />
+            </div>
+
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
+
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+
+                    <span>Show</span>
+
+                    <select
+                        value={clientPageSize}
+                        onChange={(e) => {
+                            setClientPageSize(Number(e.target.value));
+                            setClientPage(1);
+                        }}
+                        className="px-2 py-1 border cursor-pointer border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value={10}>10</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                    </select>
+
+                    <span>entries per page</span>
+
+                </div>
+
+
+                <div className="flex items-center gap-3">
+
+                    <span className="text-sm text-gray-600">
+                        Page {clientPage}
+                    </span>
+
+                    <div className="flex items-center gap-1">
+
+                        <button
+                            type="button"
+                            disabled={clientPage === 1 || isFetching}
+                            onClick={() =>
+                                setClientPage((prev) =>
+                                    Math.max(prev - 1, 1)
+                                )
+                            }
+                            className="p-2 border rounded-lg bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                            aria-label="Previous Page"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                        </button>
+
+
+                        <button
+                            type="button"
+                            disabled={!hasMore || isFetching}
+                            onClick={() =>
+                                setClientPage((prev) => prev + 1)
+                            }
+                            className="p-2 border rounded-lg bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                            aria-label="Next Page"
+                        >
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+
+                    </div>
+
+                </div>
+
             </div>
 
             <AssignAssessmentForm
@@ -467,7 +531,7 @@ const AssignAssessmentForm = ({client,open,onClose,assessments = [],AssignLoadin
     const queryClient = useQueryClient();
 
     const {
-        data: assignedData = [],
+        data: assignedData,
         isLoading: isAssignedLoading
     } = useClientAssignAssessments(client?.id);
 
@@ -476,22 +540,18 @@ const AssignAssessmentForm = ({client,open,onClose,assessments = [],AssignLoadin
     const assignMutation = useAssignAssessment();
 
     useEffect(() => {
-
         if (!client?.id) {
             setLocalSelected([]);
             return;
         }
 
         if (Array.isArray(assignedData)) {
-
             setLocalSelected(
                 assignedData.map(
-                    (item) =>
-                        String(item.assessment_Category_id)
+                    (item) => String(item.assessment_Category_id)
                 )
             );
         }
-
     }, [client?.id, assignedData]);
 
 
@@ -524,7 +584,7 @@ const AssignAssessmentForm = ({client,open,onClose,assessments = [],AssignLoadin
             });
 
             await queryClient.invalidateQueries({
-                queryKey: ["onBoardClient"],
+                queryKey: ["onboardclient"],
             });
 
             onClose();
@@ -588,9 +648,6 @@ const AssignAssessmentForm = ({client,open,onClose,assessments = [],AssignLoadin
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
                             {assessments.map((item) => {
-
-                                const idStr = String(item.id);
-
                                 return (
                                     <label
                                         key={item.id}
